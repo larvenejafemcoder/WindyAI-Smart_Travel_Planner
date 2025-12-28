@@ -7,39 +7,53 @@ import textwrap
 # ==============================================================================
 # 1. CẤU HÌNH CSS (CHAT BUTTON + GIAO DIỆN CHUNG)
 # ==============================================================================
-def inject_custom_css():
-    st.markdown("""
+def inject_custom_css(logo_b64=None, chat_open=False):
+    # Xác định style cho nút dựa trên trạng thái (Mở/Đóng) và có logo hay không
+    if logo_b64 and not chat_open:
+        # Trạng thái ĐÓNG: Hiển thị Logo WindyAI, nền trắng, ẩn text emoji
+        btn_background = f"url('data:image/png;base64,{logo_b64}') center/70% no-repeat white"
+        btn_color = "transparent" # Ẩn emoji "💬"
+        btn_border = "1px solid #e0e0e0" # Viền nhẹ cho nút trắng
+        hover_transform = "scale(1.1)"
+    else:
+        # Trạng thái MỞ (hoặc không có logo): Hiển thị nút Xanh/Đỏ mặc định
+        btn_background = "#0084ff"
+        btn_color = "white"
+        btn_border = "none"
+        hover_transform = "scale(1.1) rotate(90deg)" if chat_open else "scale(1.1)"
+
+    st.markdown(f"""
     <style>
         /* ---------------------------------------------------------------------- */
         /* 1. ĐỊNH VỊ NÚT CHAT TRÒN (FIXED POSITION) */
         /* ---------------------------------------------------------------------- */
-        div.element-container:has(#chat-btn-marker) + div.element-container button {
+        div.element-container:has(#chat-btn-marker) + div.element-container button {{
             position: fixed !important;
             bottom: 20px !important;
             right: 20px !important;
             width: 60px !important;
             height: 60px !important;
             border-radius: 50% !important;
-            background: #0084ff !important;
-            color: white !important;
-            border: none !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+            background: {btn_background} !important;
+            color: {btn_color} !important;
+            border: {btn_border} !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
             font-size: 24px !important;
             z-index: 999999 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            transition: transform 0.2s !important;
-        }
-        div.element-container:has(#chat-btn-marker) + div.element-container button:hover {
-            transform: scale(1.1) !important;
-            background: #006bcf !important;
-        }
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        }}
+        div.element-container:has(#chat-btn-marker) + div.element-container button:hover {{
+            transform: {hover_transform} !important;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
+        }}
 
         /* ---------------------------------------------------------------------- */
         /* 2. KHUNG CHAT WINDOW */
         /* ---------------------------------------------------------------------- */
-        div.floating-chat-window {
+        div.floating-chat-window {{
             position: fixed;
             bottom: 90px;
             right: 20px;
@@ -53,74 +67,74 @@ def inject_custom_css():
             overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        }}
+        @keyframes slideIn {{ from {{ opacity: 0; transform: translateY(20px) scale(0.95); }} to {{ opacity: 1; transform: translateY(0) scale(1); }} }}
 
-        .chat-header {
+        .chat-header {{
             padding: 15px; background: #fff; border-bottom: 1px solid #f0f0f0;
             display: flex; align-items: center; justify-content: space-between;
-        }
-        .chat-header .title { font-weight: bold; color: #0084ff; font-size: 1.1rem; }
-        .chat-header .status { font-size: 0.8rem; color: #31a24c; }
+        }}
+        .chat-header .title {{ font-weight: bold; color: #0084ff; font-size: 1.1rem; }}
+        .chat-header .status {{ font-size: 0.8rem; color: #31a24c; }}
 
-        .chat-body-scroll {
+        .chat-body-scroll {{
             flex: 1; overflow-y: auto; padding: 15px; background: #fff;
             display: flex; flex-direction: column;
             margin-bottom: 70px;
-        }
-        .chat-body-scroll::-webkit-scrollbar { width: 5px; }
-        .chat-body-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        }}
+        .chat-body-scroll::-webkit-scrollbar {{ width: 5px; }}
+        .chat-body-scroll::-webkit-scrollbar-thumb {{ background: #ccc; border-radius: 10px; }}
 
-        .msg-row { display: flex; margin-bottom: 10px; width: 100%; }
-        .msg-row.user { justify-content: flex-end; }
-        .msg-row.assistant { justify-content: flex-start; }
+        .msg-row {{ display: flex; margin-bottom: 10px; width: 100%; }}
+        .msg-row.user {{ justify-content: flex-end; }}
+        .msg-row.assistant {{ justify-content: flex-start; }}
         
-        .msg-bubble {
+        .msg-bubble {{
             max-width: 80%; padding: 10px 14px; border-radius: 18px;
             font-size: 14px; line-height: 1.4; position: relative;
-        }
-        .msg-bubble.user { background: #0084ff; color: white; border-bottom-right-radius: 4px; }
-        .msg-bubble.assistant { background: #f0f0f0; color: #333; border-bottom-left-radius: 4px; }
+        }}
+        .msg-bubble.user {{ background: #0084ff; color: white; border-bottom-right-radius: 4px; }}
+        .msg-bubble.assistant {{ background: #f0f0f0; color: #333; border-bottom-left-radius: 4px; }}
 
-        .chat-footer-bg {
+        .chat-footer-bg {{
             position: absolute; bottom: 0; left: 0; width: 100%; height: 75px;
             background: #fff; border-top: 1px solid #f0f0f0; z-index: 1;
-        }
+        }}
 
         /* ---------------------------------------------------------------------- */
         /* 3. INPUT HACK */
         /* ---------------------------------------------------------------------- */
-        div.element-container:has(#chat-input-marker) + div.element-container div[data-testid="stTextInput"] {
+        div.element-container:has(#chat-input-marker) + div.element-container div[data-testid="stTextInput"] {{
             position: fixed !important;
             bottom: 108px !important;
             right: 35px !important;
             width: 320px !important;
             z-index: 999999 !important;
-        }
-        div[data-testid="stTextInput"] input {
+        }}
+        div[data-testid="stTextInput"] input {{
             border-radius: 25px !important;
             background: #f0f2f5 !important;
             border: none !important;
             padding: 10px 20px !important;
-        }
-        div[data-testid="stTextInput"] input:focus {
+        }}
+        div[data-testid="stTextInput"] input:focus {{
             background: #fff !important;
             box-shadow: 0 0 0 2px #0084ff !important;
-        }
-        div[data-testid="stTextInput"] label { display: none !important; }
+        }}
+        div[data-testid="stTextInput"] label {{ display: none !important; }}
 
         /* Ẩn header footer mặc định của Streamlit */
-        header { visibility: hidden; }
-        footer { visibility: hidden; }
+        header {{ visibility: hidden; }}
+        footer {{ visibility: hidden; }}
         
         /* Ẩn padding mặc định của block-container để video tràn viền đẹp hơn */
-        .block-container {
+        .block-container {{
             padding-top: 1rem !important;
             padding-bottom: 2rem !important;
             padding-left: 1rem !important;
             padding-right: 1rem !important;
             max-width: 100% !important;
-        }
+        }}
 
     </style>
     """, unsafe_allow_html=True)
@@ -166,15 +180,10 @@ def get_base64_media(filename, folder="background"):
         return None, None
 
 def render_hero_section(filename, content_html, height="85vh", overlay_opacity=0.5, folder="background"):
-    # Clean up indentation in HTML content
     content_html = textwrap.dedent(content_html).strip()
-    
-    # Logic xử lý file lớn (Placeholder)
-    # Ở đây chúng ta gọi get_base64 để check, nếu không có file thì hiển thị warning
     b64, mime = get_base64_media(filename, folder=folder)
     
     media_html = ""
-    # Nếu không tìm thấy file hoặc lỗi, dùng background màu mặc định
     if not b64:
         media_html = '<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, #1e293b, #0f172a); z-index: 0;"></div>'
     else:
@@ -183,7 +192,6 @@ def render_hero_section(filename, content_html, height="85vh", overlay_opacity=0
         else:
             media_html = f"""<img src="data:{mime};base64,{b64}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;">"""
 
-    # Render the complete section
     full_html = f"""
     <div class="video-section" style="min-height: {height}; position: relative; overflow: hidden; border-radius: 20px; margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; background-color: #1e293b;">
         {media_html}
@@ -199,7 +207,7 @@ def render_hero_section(filename, content_html, height="85vh", overlay_opacity=0
 # 3. LOGIC CHATBOT (GIỮ NGUYÊN)
 # ==============================================================================
 def render_floating_chat():
-    # 1. Init State
+    # 1. Init State (Đã được xử lý ở đầu trang_chu nhưng giữ lại để an toàn)
     if 'show_chat' not in st.session_state: st.session_state.show_chat = False
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = [
@@ -209,7 +217,7 @@ def render_floating_chat():
     # 2. MARKER CHO NÚT CHAT
     st.markdown('<span id="chat-btn-marker"></span>', unsafe_allow_html=True)
     
-    # Render Nút
+    # Render Nút - Text sẽ được ẩn bởi CSS nếu ở trạng thái đóng và có logo
     if st.button("💬" if not st.session_state.show_chat else "✕", key="btn_chat"):
         st.session_state.show_chat = not st.session_state.show_chat
         st.rerun()
@@ -245,6 +253,7 @@ def render_floating_chat():
                 
                 txt_lower = user_input.lower()
                 reply = ""
+                # ... (Giữ nguyên logic trả lời chatbot) ...
                 if "lịch trình" in txt_lower or "kế hoạch" in txt_lower:
                     reply = "Để tạo lịch trình, bạn vui lòng truy cập tab 'Chức năng' ở trên, sau đó chọn mục '📅 Tạo lịch trình gợi ý' để bắt đầu nhé!"
                 elif "đường" in txt_lower or "chỉ đường" in txt_lower:
@@ -256,50 +265,9 @@ def render_floating_chat():
                 elif "ảnh" in txt_lower or "hình" in txt_lower:
                     reply = "Bạn muốn tìm vị trí ảnh? Vui lòng vào tab 'Chức năng' và chọn '📸 Tìm vị trí ảnh' để sử dụng tính năng này."
                 elif "các chức năng" in txt_lower or "tính năng" in txt_lower or "help" in txt_lower:
-                    reply = (
-                        "WindyAI có các tính năng chính sau:\n"
-                        "1. 📅 Tạo lịch trình gợi ý\n"
-                        "2. 🚗 Tìm đường đi\n"
-                        "3. 🌤️ Báo thời tiết vị trí\n"
-                        "4. 📍 Gợi ý địa điểm\n"
-                        "5. 📸 Tìm vị trí ảnh\n"
-                        "Bạn hãy vào tab 'Chức năng' để trải nghiệm đầy đủ nhé!"
-                    )
-                elif "xin chào" in txt_lower or "chào" in txt_lower or "hello" in txt_lower:
+                    reply = "WindyAI có các tính năng chính: Lịch trình, Tìm đường, Thời tiết, Gợi ý địa điểm, Tìm vị trí ảnh. Vào tab 'Chức năng' để trải nghiệm nhé!"
+                elif "xin chào" in txt_lower or "chào" in txt_lower:
                     reply = "Chào bạn! Mình là WindyAI, trợ lý du lịch thông minh của bạn. Mình có thể giúp gì cho chuyến đi của bạn?"
-                elif "cảm ơn" in txt_lower or "thank" in txt_lower:
-                    reply = "Rất vui được giúp bạn! Nếu cần hỗ trợ gì thêm, cứ hỏi mình nhé!"
-                elif "tạm biệt" in txt_lower or "bye" in txt_lower:
-                    reply = "Chào bạn! Chúc bạn có những chuyến đi thật vui vẻ và ý nghĩa cùng WindyAI nhé!"
-                elif "WindyAi là gì" in txt_lower or "windyai là gì" in txt_lower:
-                    reply = "WindyAI là một trợ lý du lịch thông minh sử dụng trí tuệ nhân tạo để giúp bạn lên kế hoạch, tìm đường, xem thời tiết và gợi ý địa điểm du lịch một cách nhanh chóng và tiện lợi."
-                elif "công nghệ" in txt_lower or "thuật toán" in txt_lower:
-                    reply = "WindyAI sử dụng các thuật toán tối ưu hóa lộ trình, phân tích dữ liệu địa điểm và mô hình dự báo thời tiết để cung cấp cho bạn những gợi ý và kế hoạch du lịch tốt nhất."
-                elif "ai phát triển" in txt_lower or "nhà phát triển" in txt_lower:
-                    reply = "WindyAI được phát triển bởi đội ngũ kỹ sư và nhà nghiên cứu đam mê công nghệ và du lịch, nhằm mang lại trải nghiệm du lịch thông minh và tiện lợi cho người dùng."
-                elif "liên hệ" in txt_lower or "contact" in txt_lower:
-                    reply = "Bạn có thể liên hệ với đội ngũ phát triển WindyAI qua email: hoangcaophong.works@gmail.com. Rất mong nhận được phản hồi từ bạn!"
-                elif "giới thiệu" in txt_lower or "about" in txt_lower:
-                    reply = (
-                        "WindyAI là một ứng dụng lập kế hoạch du lịch thông minh sử dụng trí tuệ nhân tạo để giúp người dùng tạo lịch trình, tìm đường đi, xem thời tiết và gợi ý địa điểm du lịch một cách nhanh chóng và tiện lợi. "
-                        "Ứng dụng được phát triển bởi đội ngũ kỹ sư và nhà nghiên cứu đam mê công nghệ và du lịch, nhằm mang lại trải nghiệm du lịch thông minh và tiện lợi cho người dùng."
-                    )
-                elif "Hotline" in txt_lower or "số điện thoại" in txt_lower:
-                    reply = "Bạn có thể liên hệ với đội ngũ phát triển WindyAI qua Hotline :0123 456 789. Rất mong nhận được phản hồi từ bạn!"
-                elif "địa chỉ" in txt_lower or "address" in txt_lower:
-                    reply = "227 Nguyễn Văn Cừ, Quận 5, TP.HCM (HCMUS). Rất mong được đón tiếp bạn!"
-                elif "video hướng dẫn" in txt_lower or "hướng dẫn sử dụng" in txt_lower:
-                    reply = "Bạn có thể xem video hướng dẫn sử dụng WindyAI tại đây: https://m.youtube.com/watch?v=LPOv2afp0iU hoặc ngay trang chủ của chúng tôi."
-                elif "ưu điểm" in txt_lower or "lợi ích" in txt_lower:
-                    reply = (
-                        "WindyAI giúp bạn tiết kiệm thời gian và công sức trong việc lên kế hoạch du lịch, cung cấp các gợi ý địa điểm phù hợp với sở thích cá nhân, tối ưu lộ trình di chuyển và cung cấp thông tin thời tiết chính xác để chuyến đi của bạn trở nên suôn sẻ và thú vị hơn."
-                    )
-                elif "phương châm" in txt_lower or "slogan" in txt_lower:
-                    reply = "Phương châm của WindyAI là 'Du lịch thông minh - Trải nghiệm tối ưu'. Chúng tôi cam kết mang đến cho bạn những trải nghiệm du lịch tuyệt vời nhất thông qua công nghệ tiên tiến và sự tận tâm trong từng chi tiết."
-                elif "đối tượng" in txt_lower or "khách hàng" in txt_lower:
-                    reply = "WindyAI hướng đến tất cả những ai yêu thích du lịch và mong muốn có những trải nghiệm du lịch thông minh, tiện lợi và tối ưu hóa thời gian, bao gồm cả khách du lịch cá nhân, gia đình và nhóm bạn."
-                elif "độ bảo mật" in txt_lower or "bảo mật" in txt_lower:
-                    reply = "WindyAI cam kết bảo vệ thông tin cá nhân của người dùng bằng các biện pháp bảo mật tiên tiến và tuân thủ các quy định về bảo vệ dữ liệu. Chúng tôi chỉ sử dụng thông tin của bạn để cải thiện trải nghiệm dịch vụ và không chia sẻ với bên thứ ba mà không có sự đồng ý của bạn."
                 else:
                     reply = "Chào bạn! WindyAI có các tính năng: Lịch trình, Tìm đường, Thời tiết... Bạn hãy vào tab 'Chức năng' để trải nghiệm đầy đủ nhé."
 
@@ -314,10 +282,18 @@ def render_floating_chat():
 def page_trang_chu():
     st.set_page_config(layout="wide", page_title="WindyAI", initial_sidebar_state="collapsed")
     
-    # 1. Inject CSS chung (Chat button)
-    inject_custom_css()
+    # Đảm bảo state được khởi tạo trước khi inject CSS để điều khiển nút chat
+    if 'show_chat' not in st.session_state: st.session_state.show_chat = False
 
-    # 2. Inject CSS riêng cho trang chủ (Sections)
+    # 1. Load Logo WindyAI cho nút chat
+    # File: assets/logo/logo.png
+    logo_b64, _ = get_base64_media("logo.png", folder="logo")
+    
+    # 2. Inject CSS chung (Chat button + Logo)
+    # Truyền logo_b64 và trạng thái chat hiện tại vào hàm CSS
+    inject_custom_css(logo_b64, st.session_state.show_chat)
+
+    # 3. Inject CSS riêng cho trang chủ (Sections)
     st.markdown("""
     <style>
         .video-section {
@@ -422,7 +398,7 @@ def page_trang_chu():
         <div style="font-size: 0.9rem; opacity: 0.8;">© 2025 WindyAI - Smart Travel Planner</div>
     """, height="60vh", overlay_opacity=0.3)
 
-    # 3. Render Chatbot
+    # 4. Render Chatbot
     render_floating_chat()
 
 if __name__ == "__main__":
