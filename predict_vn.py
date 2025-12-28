@@ -1,6 +1,8 @@
 # backend_model.py
 import sys
 import io
+import urllib.parse
+import webbrowser
 import torch
 from torchvision import models, transforms
 from PIL import Image
@@ -83,6 +85,39 @@ def predict_image_bytes(image_bytes: bytes):
     tensor = preprocess(img).unsqueeze(0).to(device)
     return _predict_tensor(tensor)
 
+# ========================
+# 6. MAP UTILS
+# ========================
+def normalize_location_name(label: str) -> str:
+    """
+    Chuyển nhãn model sang dạng dễ đọc / dễ tìm map.
+    Ví dụ: 'Buu_dien_Trung_tam' -> 'Buu dien Trung tam'
+    """
+    cleaned = label.replace("_", " ")
+    # loại bỏ khoảng trắng dư thừa
+    return " ".join(cleaned.split())
+
+def build_map_url(label: str):
+    """
+    Trả về (location_name, map_url) để mở Google Maps.
+    Thêm 'TP Hồ Chí Minh' vào query để ưu tiên kết quả đúng khu vực.
+    """
+    location_name = normalize_location_name(label)
+    query = urllib.parse.quote(f"{location_name} TP Hồ Chí Minh")
+    map_url = f"https://www.google.com/maps/search/?api=1&query={query}"
+    return location_name, map_url
+
+def open_map(label: str):
+    """
+    Mở Google Maps cho nhãn dự đoán. Luôn trả về (location_name, map_url).
+    """
+    location_name, map_url = build_map_url(label)
+    try:
+        webbrowser.open(map_url)
+    except Exception as exc:  # pragma: no cover - chỉ log lỗi mở trình duyệt
+        print(f"Không mở được trình duyệt: {exc}")
+    return location_name, map_url
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -91,4 +126,6 @@ if __name__ == "__main__":
 
     image_path = sys.argv[1]
     label, confidence = predict_image_path(image_path)
-    print(f"Kết quả: {label} (độ tin cậy = {confidence*100:.2f}%)")
+    location_name, map_url = open_map(label)
+    print(f"Kết quả: {location_name} (độ tin cậy = {confidence*100:.2f}%)")
+    print(f"Mở bản đồ: {map_url}")
