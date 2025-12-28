@@ -51,6 +51,13 @@ try:
 except ImportError:
     RECOMMENDATION_AVAILABLE = False
 
+# Import algo6 modules (Chatbot)
+try:
+    from core.algo6_chatbot.chatbot_engine import ChatbotEngine
+    CHATBOT_AVAILABLE = True
+except ImportError:
+    CHATBOT_AVAILABLE = False
+
 
 def page_chuc_nang():
     """Hiển thị nội dung trang chức năng với 4 nút lựa chọn."""
@@ -1172,6 +1179,3 @@ def render_goi_y_dia_diem():
                                         components.html(map_html, height=500)
                     except Exception as e:
                         st.error(f"❌ Lỗi: {str(e)}")
-                        st.info("Vui lòng kiểm tra lại dữ liệu hoặc liên hệ admin.")
-            else:
-                st.error("❌ Module Recommendation chưa được cài đặt.")
