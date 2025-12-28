@@ -1,4 +1,5 @@
 # backend_model.py
+import os
 import sys
 import io
 import urllib.parse
@@ -7,8 +8,11 @@ import torch
 from torchvision import models, transforms
 from PIL import Image
 
-MODEL_PATH = "model_vietnam.pth"   
-CLASSES_PATH = "classes.txt"      
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+MODEL_PATH = os.path.join(BASE_DIR, "model_vietnam.pth")
+CLASSES_PATH = os.path.join(BASE_DIR, "classes.txt")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
@@ -16,9 +20,9 @@ print("Using device:", device)
 # ========================
 # 1. LOAD CLASS NAMES
 # ========================
+
 with open(CLASSES_PATH, "r", encoding="utf-8") as f:
     CLASS_NAMES = [line.strip() for line in f.readlines()]
-
 num_classes = len(CLASS_NAMES)
 print("Số lớp:", num_classes)
 print("Classes:", CLASS_NAMES)
@@ -94,7 +98,6 @@ def normalize_location_name(label: str) -> str:
     Ví dụ: 'Buu_dien_Trung_tam' -> 'Buu dien Trung tam'
     """
     cleaned = label.replace("_", " ")
-    # loại bỏ khoảng trắng dư thừa
     return " ".join(cleaned.split())
 
 def build_map_url(label: str):
@@ -114,18 +117,8 @@ def open_map(label: str):
     location_name, map_url = build_map_url(label)
     try:
         webbrowser.open(map_url)
-    except Exception as exc:  # pragma: no cover - chỉ log lỗi mở trình duyệt
+    except Exception as exc:  
         print(f"Không mở được trình duyệt: {exc}")
     return location_name, map_url
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Cách dùng: python backend_model.py path/to/image.jpg")
-        sys.exit(1)
-
-    image_path = sys.argv[1]
-    label, confidence = predict_image_path(image_path)
-    location_name, map_url = open_map(label)
-    print(f"Kết quả: {location_name} (độ tin cậy = {confidence*100:.2f}%)")
-    print(f"Mở bản đồ: {map_url}")
