@@ -1,50 +1,49 @@
 """
-Feedback Service using SQLite
+Feedback Service using Supabase
 """
-import sqlite3
 import pandas as pd
-from datetime import datetime
-import os
-
-# Path to the database file
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "windy_feedback.db")
+from services.db import supabase
 
 def init_feedback_db():
     """Initialize the feedback database table."""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS feedback (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            name TEXT,
-            email TEXT,
-            category TEXT,
-            content TEXT,
-            status TEXT DEFAULT 'New'
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    # In Supabase, tables are created via SQL Editor or Migrations.
+    # This function is kept for compatibility but does nothing.
+    pass
 
 def add_feedback(name, email, category, content):
     """Add a new feedback entry."""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    c.execute(
-        'INSERT INTO feedback (timestamp, name, email, category, content) VALUES (?, ?, ?, ?, ?)',
-        (timestamp, name, email, category, content)
-    )
-    conn.commit()
-    conn.close()
+    if not supabase:
+        print("Supabase client not initialized.")
+        return
+
+    try:
+        data = {
+            "name": name,
+            "email": email,
+            "category": category,
+            "content": content,
+            "status": "New"
+        }
+        supabase.table("feedback").insert(data).execute()
+    except Exception as e:
+        print(f"Error adding feedback: {e}")
 
 def get_all_feedback():
     """Retrieve all feedback entries."""
-    conn = sqlite3.connect(DB_PATH)
+    if not supabase:
+        return pd.DataFrame()
+
     try:
-        df = pd.read_sql_query("SELECT * FROM feedback ORDER BY id DESC", conn)
-    except Exception:
-        df = pd.DataFrame()
-    conn.close()
-    return df
+        response = supabase.table("feedback").select("*").order("id", desc=True).execute()
+        data = response.data
+        if data:
+            df = pd.DataFrame(data)
+            # Map created_at to timestamp for compatibility
+            if 'created_at' in df.columns:
+                df['timestamp'] = df['created_at']
+            return df
+        else:
+            return pd.DataFrame()
+    except Exception as e:
+        print(f"Error retrieving feedback: {e}")
+        return pd.DataFrame()

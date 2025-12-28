@@ -343,7 +343,7 @@ def render_contact_section():
                         if "show_member_modal" in st.session_state:
                             st.session_state.show_member_modal = False
 
-                        st.success(f"Cảm ơn {name}! Tin nhắn đã được lưu vào Database.")
+                        st.success(f"Cảm ơn {name}! Gửi feedback thành công.")
                         st.balloons()
 
 
