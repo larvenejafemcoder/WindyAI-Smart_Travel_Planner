@@ -35,3 +35,4 @@ torch
 torchvision
 folium
 osmnx
+google-generativeai

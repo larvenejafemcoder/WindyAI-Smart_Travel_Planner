@@ -3,6 +3,11 @@ import base64
 import os
 import html as _html
 import textwrap
+try:
+    from core.algo6_chatbot.chatbot_engine import ChatbotEngine
+except ImportError:
+    ChatbotEngine = None
+
 
 # ==============================================================================
 # 1. CẤU HÌNH CSS (CHAT BUTTON + GIAO DIỆN CHUNG)
@@ -214,6 +219,10 @@ def render_floating_chat():
             {"role": "assistant", "content": "Chào bạn! WindyAI đây. 👋\nMình có thể giúp gì cho chuyến đi của bạn?"}
         ]
 
+    # Init Chatbot Engine
+    if 'chatbot_engine' not in st.session_state and ChatbotEngine:
+        st.session_state.chatbot_engine = ChatbotEngine()
+
     # 2. MARKER CHO NÚT CHAT
     st.markdown('<span id="chat-btn-marker"></span>', unsafe_allow_html=True)
     
@@ -251,25 +260,28 @@ def render_floating_chat():
             if user_input:
                 st.session_state.chat_history.append({"role": "user", "content": user_input})
                 
-                txt_lower = user_input.lower()
                 reply = ""
-                # ... (Giữ nguyên logic trả lời chatbot) ...
-                if "lịch trình" in txt_lower or "kế hoạch" in txt_lower:
-                    reply = "Để tạo lịch trình, bạn vui lòng truy cập tab 'Chức năng' ở trên, sau đó chọn mục '📅 Tạo lịch trình gợi ý' để bắt đầu nhé!"
-                elif "đường" in txt_lower or "chỉ đường" in txt_lower:
-                    reply = "Bạn muốn tìm đường đi? Hãy vào tab 'Chức năng' và nhấn vào nút '🚗 Tìm đường đi' nha."
-                elif "thời tiết" in txt_lower:
-                    reply = "Để xem thời tiết, bạn có thể vào tab 'Chức năng' và chọn '🌤️ Báo thời tiết vị trí', hoặc hỏi mình trực tiếp như 'Thời tiết ở Quận 1' nhé!"
-                elif "gợi ý địa điểm" in txt_lower or "địa điểm" in txt_lower:
-                    reply = "Mình có thể giúp bạn gợi ý địa điểm dựa trên sở thích của bạn. Hãy vào tab 'Chức năng' và chọn '📍 Gợi ý địa điểm' để trải nghiệm nhé!"
-                elif "ảnh" in txt_lower or "hình" in txt_lower:
-                    reply = "Bạn muốn tìm vị trí ảnh? Vui lòng vào tab 'Chức năng' và chọn '📸 Tìm vị trí ảnh' để sử dụng tính năng này."
-                elif "các chức năng" in txt_lower or "tính năng" in txt_lower or "help" in txt_lower:
-                    reply = "WindyAI có các tính năng chính: Lịch trình, Tìm đường, Thời tiết, Gợi ý địa điểm, Tìm vị trí ảnh. Vào tab 'Chức năng' để trải nghiệm nhé!"
-                elif "xin chào" in txt_lower or "chào" in txt_lower:
-                    reply = "Chào bạn! Mình là WindyAI, trợ lý du lịch thông minh của bạn. Mình có thể giúp gì cho chuyến đi của bạn?"
+                if 'chatbot_engine' in st.session_state and st.session_state.chatbot_engine:
+                    reply = st.session_state.chatbot_engine.process_message(user_input)
                 else:
-                    reply = "Chào bạn! WindyAI có các tính năng: Lịch trình, Tìm đường, Thời tiết... Bạn hãy vào tab 'Chức năng' để trải nghiệm đầy đủ nhé."
+                    txt_lower = user_input.lower()
+                    # ... (Giữ nguyên logic trả lời chatbot) ...
+                    if "lịch trình" in txt_lower or "kế hoạch" in txt_lower:
+                        reply = "Để tạo lịch trình, bạn vui lòng truy cập tab 'Chức năng' ở trên, sau đó chọn mục '📅 Tạo lịch trình gợi ý' để bắt đầu nhé!"
+                    elif "đường" in txt_lower or "chỉ đường" in txt_lower:
+                        reply = "Bạn muốn tìm đường đi? Hãy vào tab 'Chức năng' và nhấn vào nút '🚗 Tìm đường đi' nha."
+                    elif "thời tiết" in txt_lower:
+                        reply = "Để xem thời tiết, bạn có thể vào tab 'Chức năng' và chọn '🌤️ Báo thời tiết vị trí', hoặc hỏi mình trực tiếp như 'Thời tiết ở Quận 1' nhé!"
+                    elif "gợi ý địa điểm" in txt_lower or "địa điểm" in txt_lower:
+                        reply = "Mình có thể giúp bạn gợi ý địa điểm dựa trên sở thích của bạn. Hãy vào tab 'Chức năng' và chọn '📍 Gợi ý địa điểm' để trải nghiệm nhé!"
+                    elif "ảnh" in txt_lower or "hình" in txt_lower:
+                        reply = "Bạn muốn tìm vị trí ảnh? Vui lòng vào tab 'Chức năng' và chọn '📸 Tìm vị trí ảnh' để sử dụng tính năng này."
+                    elif "các chức năng" in txt_lower or "tính năng" in txt_lower or "help" in txt_lower:
+                        reply = "WindyAI có các tính năng chính: Lịch trình, Tìm đường, Thời tiết, Gợi ý địa điểm, Tìm vị trí ảnh. Vào tab 'Chức năng' để trải nghiệm nhé!"
+                    elif "xin chào" in txt_lower or "chào" in txt_lower:
+                        reply = "Chào bạn! Mình là WindyAI, trợ lý du lịch thông minh của bạn. Mình có thể giúp gì cho chuyến đi của bạn?"
+                    else:
+                        reply = "Chào bạn! WindyAI có các tính năng: Lịch trình, Tìm đường, Thời tiết... Bạn hãy vào tab 'Chức năng' để trải nghiệm đầy đủ nhé."
 
                 st.session_state.chat_history.append({"role": "assistant", "content": reply})
                 st.session_state.temp_input = "" 
