@@ -39,6 +39,7 @@ except ImportError:
 # Import algo3 modules (Image Recognition)
 try:
     from core.algo3.predict_vn import predict_pil_image
+    from core.algo3.render_recognition import render_nhan_dien_anh
     from PIL import Image
     IMAGE_RECOGNITION_AVAILABLE = True
 except ImportError:
@@ -842,35 +843,6 @@ def render_tim_duong_di():
                 st.info(f"💡 Lưu ý: Thời gian và quãng đường có thể thay đổi tùy điều kiện giao thông thực tế.")
 
 
-def render_nhan_dien_anh():
-    """Render phần Tìm vị trí ảnh"""
-    st.markdown("### 📷 Tìm vị trí ảnh")
-    st.markdown(
-        "<p class='feature-muted'>Tải lên ảnh địa điểm, hệ thống sẽ nhận diện loại địa điểm.</p>",
-        unsafe_allow_html=True,
-    )
-
-    if not IMAGE_RECOGNITION_AVAILABLE:
-        st.error("❌ Module nhận diện ảnh chưa được cài đặt hoặc bị lỗi.")
-        return
-
-    img_file = st.file_uploader("Tải ảnh địa điểm (JPG/PNG)", type=["jpg", "jpeg", "png"])
-    if img_file is not None:
-        image = Image.open(img_file)
-        st.image(image, caption="Ảnh đã tải lên", use_column_width=True)
-        
-        if st.button("🔍 Nhận diện ngay"):
-            with st.spinner("Đang phân tích ảnh..."):
-                try:
-                    # predictor = get_predictor()
-                    label, confidence = predict_pil_image(image)
-                    
-                    st.success(f"📍 Kết quả: **{label}**")
-                    st.info(f"🎯 Độ tin cậy: **{confidence*100:.2f}%**")
-                except Exception as e:
-                    st.error(f"Lỗi khi nhận diện: {str(e)}")
-    else:
-        st.caption("📷 Chưa có ảnh nào được chọn.")
 
 
 def render_bao_thoi_tiet():
