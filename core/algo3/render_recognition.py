@@ -5,7 +5,7 @@ import services.utils as utils
 
 # Import algo3 modules (Image Recognition)
 try:
-    from core.algo3.predict_vn import get_predictor
+    from core.algo3.predict_vn import predict_pil_image as algo3_predict
     IMAGE_RECOGNITION_AVAILABLE = True
 except ImportError:
     IMAGE_RECOGNITION_AVAILABLE = False
@@ -22,8 +22,7 @@ def predict_pil_image(image):
     """Helper function to use the singleton predictor."""
     if not IMAGE_RECOGNITION_AVAILABLE:
         return "Unknown", 0.0
-    predictor = get_predictor()
-    return predictor.predict_pil_image(image)
+    return algo3_predict(image)
 
 def render_nhan_dien_anh():
     """Render phần Tìm vị trí ảnh - Layout Cân Đối & Bản đồ Style Mới"""

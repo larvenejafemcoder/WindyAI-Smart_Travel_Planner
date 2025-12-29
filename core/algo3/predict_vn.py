@@ -1,95 +1,124 @@
+# backend_model.py
 import os
+import sys
 import io
+import urllib.parse
+import webbrowser
 import torch
 from torchvision import models, transforms
 from PIL import Image
 
-# Determine the directory of this file
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(CURRENT_DIR, "model_vietnam.pth")
-CLASSES_PATH = os.path.join(CURRENT_DIR, "classes.txt")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-class ImagePredictor:
-    _instance = None
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(ImagePredictor, cls).__new__(cls)
-            cls._instance._initialize()
-        return cls._instance
+MODEL_PATH = os.path.join(BASE_DIR, "model_vietnam.pth")
+CLASSES_PATH = os.path.join(BASE_DIR, "classes.txt")
 
-    def _initialize(self):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"ImagePredictor initializing on device: {self.device}")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Using device:", device)
 
-        # Load Class Names
-        if not os.path.exists(CLASSES_PATH):
-            raise FileNotFoundError(f"Classes file not found at {CLASSES_PATH}")
-        
-        with open(CLASSES_PATH, "r", encoding="utf-8") as f:
-            self.class_names = [line.strip() for line in f.readlines()]
-        
-        self.num_classes = len(self.class_names)
+# ========================
+# 1. LOAD CLASS NAMES
+# ========================
 
-        # Load Model
-        if not os.path.exists(MODEL_PATH):
-            raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
+with open(CLASSES_PATH, "r", encoding="utf-8") as f:
+    CLASS_NAMES = [line.strip() for line in f.readlines()]
+num_classes = len(CLASS_NAMES)
+print("Số lớp:", num_classes)
+print("Classes:", CLASS_NAMES)
 
-        self.model = models.resnet18(weights=None)
-        in_features = self.model.fc.in_features
-        self.model.fc = torch.nn.Linear(in_features, self.num_classes)
+# ========================
+# 2. LOAD MODEL
+# ========================
+model = models.resnet18(weights=None)   
+in_features = model.fc.in_features
+model.fc = torch.nn.Linear(in_features, num_classes)
 
-        state_dict = torch.load(MODEL_PATH, map_location=self.device)
-        self.model.load_state_dict(state_dict)
-        self.model.eval()
-        self.model.to(self.device)
+state_dict = torch.load(MODEL_PATH, map_location=device)
+model.load_state_dict(state_dict)
+model.eval()
+model.to(device)
 
-        # Preprocessing
-        self.preprocess = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-        ])
+# ========================
+# 3. TIỀN XỬ LÝ ẢNH
 
-    def _predict_tensor(self, img_tensor: torch.Tensor):
-        with torch.no_grad():
-            outputs = self.model(img_tensor)
-            probs = torch.softmax(outputs, dim=1)
-            conf, pred_idx = torch.max(probs, 1)
-            # Cast to int/float explicitly to satisfy type checkers
-            pred_idx_val = int(pred_idx.item())
-            conf_val = float(conf.item())
+preprocess = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225],
+    ),
+])
 
-        label = self.class_names[pred_idx_val]
-        return label, conf_val
+# ========================
+# 4. CORE PREDICT
+# ========================
+def _predict_tensor(img_tensor: torch.Tensor):
+    """
+    img_tensor: [1, 3, 224, 224] đã preprocess & đưa lên device
+    """
+    with torch.no_grad():
+        outputs = model(img_tensor)
+        probs = torch.softmax(outputs, dim=1)
+        conf, pred_idx = torch.max(probs, 1)
+        pred_idx = pred_idx.item()
+        conf = conf.item()
 
-    def predict_pil_image(self, img: Image.Image):
-        """Dự đoán từ PIL Image (dùng cho Streamlit)."""
-        img = img.convert("RGB")
-        img_tensor = self.preprocess(img)
-        
-        # Ensure type checker knows this is a Tensor
-        if not isinstance(img_tensor, torch.Tensor):
-            raise TypeError("Preprocessing failed to return a Tensor")
-            
-        tensor = img_tensor.unsqueeze(0).to(self.device)
-        return self._predict_tensor(tensor)
+    label = CLASS_NAMES[pred_idx]
+    return label, conf
 
-    def predict_image_bytes(self, image_bytes: bytes):
-        """Dự đoán từ bytes ảnh."""
-        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        img_tensor = self.preprocess(img)
-        
-        # Ensure type checker knows this is a Tensor
-        if not isinstance(img_tensor, torch.Tensor):
-            raise TypeError("Preprocessing failed to return a Tensor")
+# ========================
+# 5. HÀM PUBLIC – DÙNG LẠI
+# ========================
+def predict_image_path(image_path: str):
+    """Dự đoán từ đường dẫn file ảnh (dùng CMD / Tkinter / script)."""
+    img = Image.open(image_path).convert("RGB")
+    tensor = preprocess(img).unsqueeze(0).to(device)
+    return _predict_tensor(tensor)
 
-        tensor = img_tensor.unsqueeze(0).to(self.device)
-        return self._predict_tensor(tensor)
+def predict_pil_image(img: Image.Image):
+    """Dự đoán từ PIL Image (dùng cho Streamlit, Tkinter)."""
+    img = img.convert("RGB")
+    tensor = preprocess(img).unsqueeze(0).to(device)
+    return _predict_tensor(tensor)
 
-# Singleton instance accessor
-def get_predictor():
-    return ImagePredictor()
+def predict_image_bytes(image_bytes: bytes):
+    """Dự đoán từ bytes ảnh (upload web, socket, v.v.)."""
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    tensor = preprocess(img).unsqueeze(0).to(device)
+    return _predict_tensor(tensor)
+
+# ========================
+# 6. MAP UTILS
+# ========================
+def normalize_location_name(label: str) -> str:
+    """
+    Chuyển nhãn model sang dạng dễ đọc / dễ tìm map.
+    Ví dụ: 'Buu_dien_Trung_tam' -> 'Buu dien Trung tam'
+    """
+    cleaned = label.replace("_", " ")
+    return " ".join(cleaned.split())
+
+def build_map_url(label: str):
+    """
+    Trả về (location_name, map_url) để mở Google Maps.
+    Thêm 'TP Hồ Chí Minh' vào query để ưu tiên kết quả đúng khu vực.
+    """
+    location_name = normalize_location_name(label)
+    query = urllib.parse.quote(f"{location_name} TP Hồ Chí Minh")
+    map_url = f"https://www.google.com/maps/search/?api=1&query={query}"
+    return location_name, map_url
+
+def open_map(label: str):
+    """
+    Mở Google Maps cho nhãn dự đoán. Luôn trả về (location_name, map_url).
+    """
+    location_name, map_url = build_map_url(label)
+    try:
+        webbrowser.open(map_url)
+    except Exception as exc:  
+        print(f"Không mở được trình duyệt: {exc}")
+    return location_name, map_url
+
+

@@ -38,7 +38,7 @@ except ImportError:
 
 # Import algo3 modules (Image Recognition)
 try:
-    from core.algo3.predict_vn import get_predictor
+    from core.algo3.predict_vn import predict_pil_image
     from PIL import Image
     IMAGE_RECOGNITION_AVAILABLE = True
 except ImportError:
@@ -862,8 +862,8 @@ def render_nhan_dien_anh():
         if st.button("🔍 Nhận diện ngay"):
             with st.spinner("Đang phân tích ảnh..."):
                 try:
-                    predictor = get_predictor()
-                    label, confidence = predictor.predict_pil_image(image)
+                    # predictor = get_predictor()
+                    label, confidence = predict_pil_image(image)
                     
                     st.success(f"📍 Kết quả: **{label}**")
                     st.info(f"🎯 Độ tin cậy: **{confidence*100:.2f}%**")
