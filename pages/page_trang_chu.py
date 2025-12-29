@@ -34,7 +34,7 @@ def inject_custom_css(logo_b64=None, chat_open=False):
         /* ---------------------------------------------------------------------- */
         div.element-container:has(#chat-btn-marker) + div.element-container button {{
             position: fixed !important;
-            bottom: 20px !important;
+            bottom: 70px !important;
             right: 20px !important;
             width: 60px !important;
             height: 60px !important;
@@ -60,7 +60,7 @@ def inject_custom_css(logo_b64=None, chat_open=False):
         /* ---------------------------------------------------------------------- */
         div.floating-chat-window {{
             position: fixed;
-            bottom: 90px;
+            bottom: 140px;
             right: 20px;
             width: 350px;
             height: 500px;
