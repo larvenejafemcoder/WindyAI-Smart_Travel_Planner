@@ -222,6 +222,9 @@ def render_floating_chat():
     # Init Chatbot Engine
     if 'chatbot_engine' not in st.session_state and ChatbotEngine:
         st.session_state.chatbot_engine = ChatbotEngine()
+        
+    if 'waiting_for_bot' not in st.session_state:
+        st.session_state.waiting_for_bot = False
 
     # 2. MARKER CHO NÚT CHAT
     st.markdown('<span id="chat-btn-marker"></span>', unsafe_allow_html=True)
@@ -238,6 +241,10 @@ def render_floating_chat():
             role = "assistant" if msg["role"] == "assistant" else "user"
             content = _html.escape(msg["content"]).replace("\n", "<br>")
             messages_html += f'<div class="msg-row {role}"><div class="msg-bubble {role}">{content}</div></div>'
+            
+        # Nếu đang chờ bot trả lời, thêm bubble "đang soạn tin..."
+        if st.session_state.waiting_for_bot:
+            messages_html += """<div class="msg-row assistant"><div class="msg-bubble assistant"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>"""
 
         full_chat_html = textwrap.dedent(f"""
             <div class="floating-chat-window">
@@ -250,6 +257,29 @@ def render_floating_chat():
                 </div>
                 <div class="chat-footer-bg"></div>
             </div>
+            <style>
+            .typing-indicator {{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 20px;
+            }}
+            .typing-indicator span {{
+                display: block;
+                width: 6px;
+                height: 6px;
+                background-color: #555;
+                border-radius: 50%;
+                margin: 0 2px;
+                animation: typing 1.4s infinite ease-in-out both;
+            }}
+            .typing-indicator span:nth-child(1) {{ animation-delay: -0.32s; }}
+            .typing-indicator span:nth-child(2) {{ animation-delay: -0.16s; }}
+            @keyframes typing {{
+                0%, 80%, 100% {{ transform: scale(0); }}
+                40% {{ transform: scale(1); }}
+            }}
+            </style>
         """)
         st.markdown(full_chat_html, unsafe_allow_html=True)
 
@@ -258,35 +288,44 @@ def render_floating_chat():
         def submit_chat():
             user_input = st.session_state.temp_input
             if user_input:
+                # Thêm tin nhắn user vào history ngay lập tức
                 st.session_state.chat_history.append({"role": "user", "content": user_input})
-                
-                reply = ""
-                if 'chatbot_engine' in st.session_state and st.session_state.chatbot_engine:
-                    reply = st.session_state.chatbot_engine.process_message(user_input)
-                else:
-                    txt_lower = user_input.lower()
-                    # ... (Giữ nguyên logic trả lời chatbot) ...
-                    if "lịch trình" in txt_lower or "kế hoạch" in txt_lower:
-                        reply = "Để tạo lịch trình, bạn vui lòng truy cập tab 'Chức năng' ở trên, sau đó chọn mục '📅 Tạo lịch trình gợi ý' để bắt đầu nhé!"
-                    elif "đường" in txt_lower or "chỉ đường" in txt_lower:
-                        reply = "Bạn muốn tìm đường đi? Hãy vào tab 'Chức năng' và nhấn vào nút '🚗 Tìm đường đi' nha."
-                    elif "thời tiết" in txt_lower:
-                        reply = "Để xem thời tiết, bạn có thể vào tab 'Chức năng' và chọn '🌤️ Báo thời tiết vị trí', hoặc hỏi mình trực tiếp như 'Thời tiết ở Quận 1' nhé!"
-                    elif "gợi ý địa điểm" in txt_lower or "địa điểm" in txt_lower:
-                        reply = "Mình có thể giúp bạn gợi ý địa điểm dựa trên sở thích của bạn. Hãy vào tab 'Chức năng' và chọn '📍 Gợi ý địa điểm' để trải nghiệm nhé!"
-                    elif "ảnh" in txt_lower or "hình" in txt_lower:
-                        reply = "Bạn muốn tìm vị trí ảnh? Vui lòng vào tab 'Chức năng' và chọn '📸 Tìm vị trí ảnh' để sử dụng tính năng này."
-                    elif "các chức năng" in txt_lower or "tính năng" in txt_lower or "help" in txt_lower:
-                        reply = "WindyAI có các tính năng chính: Lịch trình, Tìm đường, Thời tiết, Gợi ý địa điểm, Tìm vị trí ảnh. Vào tab 'Chức năng' để trải nghiệm nhé!"
-                    elif "xin chào" in txt_lower or "chào" in txt_lower:
-                        reply = "Chào bạn! Mình là WindyAI, trợ lý du lịch thông minh của bạn. Mình có thể giúp gì cho chuyến đi của bạn?"
-                    else:
-                        reply = "Chào bạn! WindyAI có các tính năng: Lịch trình, Tìm đường, Thời tiết... Bạn hãy vào tab 'Chức năng' để trải nghiệm đầy đủ nhé."
-
-                st.session_state.chat_history.append({"role": "assistant", "content": reply})
-                st.session_state.temp_input = "" 
+                st.session_state.temp_input = "" # Clear input ngay
+                st.session_state.waiting_for_bot = True # Đánh dấu đang chờ bot
 
         st.text_input("input_placeholder", key="temp_input", on_change=submit_chat, placeholder="Hỏi về lịch trình...", label_visibility="collapsed")
+        
+        # Xử lý logic bot trả lời SAU khi đã render UI (để user thấy tin nhắn của mình trước)
+        if st.session_state.waiting_for_bot:
+            # Lấy tin nhắn cuối cùng của user
+            last_user_msg = st.session_state.chat_history[-1]["content"]
+            
+            reply = ""
+            if 'chatbot_engine' in st.session_state and st.session_state.chatbot_engine:
+                reply = st.session_state.chatbot_engine.process_message(last_user_msg)
+            else:
+                # Fallback logic cũ
+                txt_lower = last_user_msg.lower()
+                if "lịch trình" in txt_lower or "kế hoạch" in txt_lower:
+                    reply = "Để tạo lịch trình, bạn vui lòng truy cập tab 'Chức năng' ở trên, sau đó chọn mục '📅 Tạo lịch trình gợi ý' để bắt đầu nhé!"
+                elif "đường" in txt_lower or "chỉ đường" in txt_lower:
+                    reply = "Bạn muốn tìm đường đi? Hãy vào tab 'Chức năng' và nhấn vào nút '🚗 Tìm đường đi' nha."
+                elif "thời tiết" in txt_lower:
+                    reply = "Để xem thời tiết, bạn có thể vào tab 'Chức năng' và chọn '🌤️ Báo thời tiết vị trí', hoặc hỏi mình trực tiếp như 'Thời tiết ở Quận 1' nhé!"
+                elif "gợi ý địa điểm" in txt_lower or "địa điểm" in txt_lower:
+                    reply = "Mình có thể giúp bạn gợi ý địa điểm dựa trên sở thích của bạn. Hãy vào tab 'Chức năng' và chọn '📍 Gợi ý địa điểm' để trải nghiệm nhé!"
+                elif "ảnh" in txt_lower or "hình" in txt_lower:
+                    reply = "Bạn muốn tìm vị trí ảnh? Vui lòng vào tab 'Chức năng' và chọn '📸 Tìm vị trí ảnh' để sử dụng tính năng này."
+                elif "các chức năng" in txt_lower or "tính năng" in txt_lower or "help" in txt_lower:
+                    reply = "WindyAI có các tính năng chính: Lịch trình, Tìm đường, Thời tiết, Gợi ý địa điểm, Tìm vị trí ảnh. Vào tab 'Chức năng' để trải nghiệm nhé!"
+                elif "xin chào" in txt_lower or "chào" in txt_lower:
+                    reply = "Chào bạn! Mình là WindyAI, trợ lý du lịch thông minh của bạn. Mình có thể giúp gì cho chuyến đi của bạn?"
+                else:
+                    reply = "Chào bạn! WindyAI có các tính năng: Lịch trình, Tìm đường, Thời tiết... Bạn hãy vào tab 'Chức năng' để trải nghiệm đầy đủ nhé."
+
+            st.session_state.chat_history.append({"role": "assistant", "content": reply})
+            st.session_state.waiting_for_bot = False
+            st.rerun()
 
 # ==============================================================================
 # 4. MAIN APP (CẬP NHẬT GIAO DIỆN MỚI)
