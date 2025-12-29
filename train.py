@@ -1,4 +1,3 @@
-# train.py 
 import os
 import time
 import torch
@@ -14,15 +13,14 @@ Image.LOAD_TRUNCATED_IMAGES = True
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", DEVICE)
 
-DATA_DIR = "data"           # thư mục chứa train/ và val/
+DATA_DIR = "data"          
 MODEL_PATH = "model_vietnam.pth"
 CLASSES_PATH = "classes.txt"
 
 BATCH_SIZE = 32
 NUM_EPOCHS = 30      
 LR = 1e-4
-PATIENCE = 5             # nếu 5 epoch liên tiếp val_acc không tăng thì dừng
-
+PATIENCE = 5            
 # ============================
 # 1. TRANSFORMS CHO DATA
 # ============================
@@ -30,7 +28,7 @@ train_transform = transforms.Compose([
     transforms.Resize((256, 256)),
     transforms.RandomResizedCrop(224),
     transforms.RandomHorizontalFlip(),
-    transforms.ColorJitter(0.2, 0.2, 0.2, 0.1),  # tăng đa dạng ảnh
+    transforms.ColorJitter(0.2, 0.2, 0.2, 0.1),  
     transforms.ToTensor(),
     transforms.Normalize(
         mean=[0.485, 0.456, 0.406],
