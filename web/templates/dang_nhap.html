@@ -1,0 +1,72 @@
+<!-- ===== AUTH PAGE ===== -->
+<div class="auth-wrap">
+  <h2 style="text-align:center;margin-bottom:1.5rem;color:#0F172A;">Đăng nhập / Đăng ký</h2>
+  <p style="text-align:center;color:#64748B;margin-bottom:1.5rem;">Quản lý tài khoản để lưu lại các lịch trình yêu thích.</p>
+
+  <!-- Tab switcher (pure JS, no reload) -->
+  <div class="auth-tabs">
+    <button class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">Sign in</button>
+    <button class="auth-tab"        id="tab-signup" onclick="switchTab('signup')">Sign up</button>
+  </div>
+
+  <!-- Sign in form -->
+  <div id="panel-signin">
+    <div class="form-card">
+      <form hx-post="/api/login"
+            hx-target="#auth-result"
+            hx-swap="innerHTML"
+            hx-indicator="#login-spinner">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="your@email.com" required />
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu</label>
+          <input type="password" name="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span id="login-spinner" class="htmx-indicator spinner"></span>
+          Đăng nhập
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sign up form -->
+  <div id="panel-signup" style="display:none;">
+    <div class="form-card">
+      <form hx-post="/api/register"
+            hx-target="#auth-result"
+            hx-swap="innerHTML"
+            hx-indicator="#reg-spinner">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="your@email.com" required />
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu</label>
+          <input type="password" name="password" placeholder="••••••••" required minlength="6" />
+        </div>
+        <div class="form-group">
+          <label>Xác nhận mật khẩu</label>
+          <input type="password" name="confirm" placeholder="••••••••" required minlength="6" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span id="reg-spinner" class="htmx-indicator spinner"></span>
+          Đăng ký
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="auth-result" style="margin-top:1rem;"></div>
+</div>
+
+<script>
+  function switchTab(tab) {
+    document.getElementById('panel-signin').style.display = tab === 'signin' ? 'block' : 'none';
+    document.getElementById('panel-signup').style.display = tab === 'signup' ? 'block' : 'none';
+    document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+    document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  }
+</script>

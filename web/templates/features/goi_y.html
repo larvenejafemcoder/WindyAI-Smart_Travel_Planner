@@ -1,0 +1,47 @@
+<!-- ===== FEATURE: Place Recommender ===== -->
+<h3 style="margin-bottom:0.5rem;">📍 Gợi ý địa điểm</h3>
+<p style="color:#64748B;margin-bottom:1.25rem;">Tìm chỗ chơi phù hợp với sở thích của bạn.</p>
+
+<form hx-post="/api/feature/goi-y"
+      hx-target="#goi-y-result"
+      hx-swap="innerHTML"
+      hx-indicator="#gy-spinner">
+
+  <div class="form-card" style="margin-bottom:1rem;">
+    <label style="font-weight:600;font-size:0.9rem;color:#1E293B;display:block;margin-bottom:0.5rem;">🎯 Sở thích (chọn ít nhất 1)</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1.5rem;margin-bottom:1rem;">
+      {% for val, label in [
+        ("history",     "🏛️ Lịch sử / Di tích"),
+        ("museum",      "🏛️ Bảo tàng"),
+        ("food",        "🍜 Ẩm thực"),
+        ("park",        "🌳 Công viên"),
+        ("shopping",    "🛍️ Mua sắm"),
+        ("entertainment","🎭 Giải trí"),
+        ("religious",   "🙏 Tôn giáo"),
+        ("viewpoint",   "🌆 Điểm ngắm cảnh")
+      ] %}
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.92rem;cursor:pointer;">
+        <input type="checkbox" name="prefs" value="{{ val }}" />
+        {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+
+    <div class="form-group">
+      <label>⭐ Đánh giá tối thiểu</label>
+      <select name="min_rating">
+        <option value="3.0">3.0+</option>
+        <option value="3.5" selected>3.5+</option>
+        <option value="4.0">4.0+</option>
+        <option value="4.5">4.5+</option>
+      </select>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-full">
+    <span id="gy-spinner" class="htmx-indicator spinner"></span>
+    🔍 Tìm địa điểm
+  </button>
+</form>
+
+<div id="goi-y-result" style="margin-top:1.5rem;"></div>

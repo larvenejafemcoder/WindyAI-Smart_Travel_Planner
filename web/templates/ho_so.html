@@ -1,0 +1,40 @@
+<!-- ===== PROFILE PAGE ===== -->
+{% if current_user %}
+<div class="profile-header">
+  <h2 style="margin-bottom:0.25rem;">👤 Hồ sơ của bạn</h2>
+  <p style="opacity:0.85;">{{ current_user }}</p>
+</div>
+
+<h3 style="margin-bottom:1rem;">🗂️ Lịch trình đã lưu</h3>
+
+<!-- HTMX loads schedules list -->
+<div id="schedules-list"
+     hx-get="/api/schedules"
+     hx-trigger="load"
+     hx-swap="innerHTML"
+     hx-indicator="#sched-spinner">
+  <div class="htmx-indicator" id="sched-spinner" style="position:static;height:3px;border-radius:2px;"></div>
+  <p style="color:#64748B;">Đang tải lịch trình...</p>
+</div>
+
+<hr style="border:none;border-top:1px solid #E2E8F0;margin:1.5rem 0;" />
+
+<form hx-post="/api/logout"
+      hx-target="body"
+      hx-push-url="/dang-nhap">
+  <button type="submit" class="btn btn-danger">🚪 Đăng xuất</button>
+</form>
+
+{% else %}
+<div class="alert alert-error">Bạn cần đăng nhập để xem trang này.</div>
+<p style="color:#64748B;">
+  Vui lòng
+  <a href="/dang-nhap"
+     hx-get="/dang-nhap"
+     hx-target="#page-content"
+     hx-push-url="/dang-nhap"
+     hx-swap="innerHTML transition:true"
+     style="color:#2563EB;font-weight:600;">đăng nhập</a>
+  để tiếp tục.
+</p>
+{% endif %}

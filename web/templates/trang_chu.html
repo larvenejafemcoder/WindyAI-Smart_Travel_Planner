@@ -1,0 +1,87 @@
+<!-- ===== HOME PAGE (partial – swapped by HTMX) ===== -->
+
+<!-- Section 1: Hero -->
+<div class="hero">
+  <img class="hero-bg" src="/static/background/section-1_optimized.jpg" alt="" />
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="badge-pill">✨ WindyAI – Smart Travel Planner</span>
+    <h1 class="hero-title">Lên kế hoạch du lịch<br>thông minh với AI</h1>
+    <p class="hero-sub">
+      Chỉ cần nhập điểm đến, ngân sách và thời gian rảnh.<br>
+      Hệ thống sẽ giúp bạn tạo lịch trình <strong>thông minh – nhanh chóng – tối ưu</strong>.
+    </p>
+    <a class="btn btn-primary"
+       href="/chuc-nang"
+       hx-get="/chuc-nang"
+       hx-target="#page-content"
+       hx-push-url="/chuc-nang"
+       hx-swap="innerHTML transition:true">
+      🗓️ Bắt đầu lên kế hoạch
+    </a>
+  </div>
+</div>
+
+<!-- Section 2: Highlights -->
+<div class="hero" style="min-height:70vh;">
+  <img class="hero-bg" src="/static/background/section-2_optimized.jpg" alt="" />
+  <div class="hero-overlay" style="background:rgba(0,0,0,0.6);"></div>
+  <div class="hero-content">
+    <h2 style="font-size:2.2rem;font-weight:700;margin-bottom:1.5rem;">Điểm nổi bật</h2>
+    <div class="flex-row">
+      <div class="feature-box">
+        <div class="icon">⏱️</div>
+        <h3>Tối ưu thời gian</h3>
+        <p>Sắp xếp lộ trình khoa học, không lo kẹt xe hay đi đường vòng.</p>
+      </div>
+      <div class="feature-box">
+        <div class="icon">💸</div>
+        <h3>Cân đối chi phí</h3>
+        <p>Gợi ý điểm đến phù hợp với túi tiền của bạn.</p>
+      </div>
+      <div class="feature-box">
+        <div class="icon">🧭</div>
+        <h3>Dễ sử dụng</h3>
+        <p>Giao diện thân thiện, thao tác đơn giản cho mọi lứa tuổi.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 3: Stats (video) -->
+<div class="hero" style="min-height:60vh;">
+  <video autoplay muted loop playsinline class="hero-bg">
+    <source src="/static/background/section-3.mp4" type="video/mp4" />
+  </video>
+  <div class="hero-overlay" style="background:rgba(0,0,0,0.7);"></div>
+  <div class="hero-content">
+    <h2 style="font-size:2.2rem;font-weight:700;margin-bottom:1.5rem;">Hiệu suất vượt trội</h2>
+    <div class="flex-row">
+      <div class="feature-box">
+        <div class="stat-number">~2 phút</div>
+        <div style="font-weight:600;">Thời gian chuẩn bị</div>
+      </div>
+      <div class="feature-box">
+        <div class="stat-number">3–20</div>
+        <div style="font-weight:600;">Điểm đến / ngày</div>
+      </div>
+      <div class="feature-box">
+        <div class="stat-number">100%</div>
+        <div style="font-weight:600;">Tự động hóa</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 4: Footer video -->
+<div class="hero" style="min-height:50vh;">
+  <video autoplay muted loop playsinline class="hero-bg">
+    <source src="/static/background/section-4.MP4" type="video/mp4" />
+  </video>
+  <div class="hero-overlay" style="background:rgba(0,0,0,0.3);"></div>
+  <div class="hero-content">
+    <h2 style="font-size:2rem;font-weight:700;margin-bottom:1rem;">Trải nghiệm ngay hôm nay</h2>
+    <p style="font-size:1.1rem;margin-bottom:1.5rem;">Khám phá thế giới theo cách riêng của bạn.</p>
+    <p style="font-size:0.85rem;opacity:0.7;">© 2025 WindyAI – Smart Travel Planner</p>
+  </div>
+</div>

@@ -1,0 +1,37 @@
+<!-- ===== FEATURES PAGE ===== -->
+<div class="section-title">✅ Chức năng</div>
+<p class="section-subtitle">Chọn chức năng bạn muốn sử dụng.</p>
+
+<!-- Tab bar – each button swaps #feature-panel via HTMX -->
+<div class="tab-bar" role="tablist">
+  {% for slug, label in [
+    ("lich-trinh",  "🗓️ Tạo lịch trình"),
+    ("tim-duong",   "🚗 Tìm đường đi"),
+    ("nhan-dien",   "📷 Tìm vị trí ảnh"),
+    ("thoi-tiet",   "🌤️ Thời tiết"),
+    ("goi-y",       "📍 Gợi ý địa điểm")
+  ] %}
+  <button class="tab-btn {% if active_tab == slug %}active{% endif %}"
+          hx-get="/api/feature/{{ slug }}"
+          hx-target="#feature-panel"
+          hx-swap="innerHTML"
+          hx-indicator="#feature-spinner"
+          onclick="setActiveTab(this)">
+    {{ label }}
+  </button>
+  {% endfor %}
+</div>
+
+<div id="feature-spinner" class="htmx-indicator" style="position:static;height:3px;border-radius:2px;margin-bottom:0.75rem;"></div>
+
+<!-- Feature panel – HTMX loads partials here -->
+<div id="feature-panel">
+  {% include "features/lich_trinh.html" %}
+</div>
+
+<script>
+  function setActiveTab(btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+</script>

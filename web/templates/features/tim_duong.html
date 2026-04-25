@@ -1,0 +1,34 @@
+<!-- ===== FEATURE: Route Finder ===== -->
+<h3 style="margin-bottom:0.5rem;">🚗 Tìm đường đi</h3>
+<p style="color:#64748B;margin-bottom:1.25rem;">Nhập điểm đi và điểm đến để xem lộ trình tối ưu.</p>
+
+<form hx-post="/api/feature/tim-duong"
+      hx-target="#tim-duong-result"
+      hx-swap="innerHTML"
+      hx-indicator="#td-spinner">
+
+  <div class="form-card" style="margin-bottom:1rem;">
+    <div class="form-group">
+      <label>📍 Điểm xuất phát</label>
+      <input type="text" name="start" placeholder="Ví dụ: Chợ Bến Thành, Quận 1" required />
+    </div>
+    <div class="form-group">
+      <label>🏁 Điểm đến</label>
+      <input type="text" name="end" placeholder="Ví dụ: Landmark 81, Bình Thạnh" required />
+    </div>
+    <div class="form-group">
+      <label>🚘 Phương tiện</label>
+      <select name="vehicle">
+        <option value="driving">🚗 Ô tô / Taxi</option>
+        <option value="bike">🏍️ Xe máy</option>
+      </select>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-full">
+    <span id="td-spinner" class="htmx-indicator spinner"></span>
+    🔍 Tìm đường
+  </button>
+</form>
+
+<div id="tim-duong-result" style="margin-top:1.5rem;"></div>

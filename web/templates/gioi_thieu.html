@@ -1,0 +1,155 @@
+<!-- ===== ABOUT PAGE ===== -->
+<div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1rem;">
+  <img src="/static/logo.png" alt="WindyAI" style="height:90px;width:auto;" />
+  <div>
+    <h1 class="main-header">WindyAI</h1>
+    <p class="sub-header">Smart Travel Planner – Du lịch thông minh trong tầm tay</p>
+  </div>
+</div>
+
+<hr style="border:none;border-top:1px solid #E2E8F0;margin-bottom:1.5rem;" />
+
+<!-- Features -->
+<h3 style="margin-bottom:1rem;">🌟 Tính năng nổi bật</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;margin-bottom:2rem;">
+  {% for icon, title, desc in [
+    ("🚀","AI Optimization","Bạn chỉ cần chọn điểm đến, AI sẽ tự sắp xếp lộ trình đi lại hợp lý và tiết kiệm nhất."),
+    ("📍","Smart Suggestion","Không biết đi đâu? Hệ thống sẽ chỉ cho bạn những chỗ ăn, chỗ chơi đúng sở thích."),
+    ("🗺️","Interactive Map","Nhìn thấy toàn bộ đường đi trên bản đồ để dễ dàng hình dung chuyến đi sắp tới.")
+  ] %}
+  <div class="feature-card">
+    <div class="feature-icon">{{ icon }}</div>
+    <h4 style="margin:0 0 0.5rem;color:#1E293B;">{{ title }}</h4>
+    <p style="color:#64748B;margin:0;">{{ desc }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Tech stack -->
+<h3 style="margin-bottom:0.75rem;">🛠️ Công nghệ</h3>
+<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:2rem;">
+  {% for tech in ["Python","FastAPI","HTMX","Jinja2","PyTorch","OpenStreetMap","Supabase"] %}
+  <span style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;padding:5px 14px;border-radius:8px;font-weight:600;font-size:0.88rem;">{{ tech }}</span>
+  {% endfor %}
+</div>
+
+<hr style="border:none;border-top:1px solid #E2E8F0;margin-bottom:1.5rem;" />
+
+<!-- Demo video -->
+<h3 style="margin-bottom:1rem;">🎥 Demo Website</h3>
+<div style="max-width:80%;margin:0 auto 2rem;">
+  <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.1);border:1px solid #E2E8F0;">
+    <iframe src="https://www.youtube.com/embed/LPOv2afp0iU"
+            frameborder="0"
+            allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"
+            allowfullscreen
+            style="position:absolute;top:0;left:0;width:100%;height:100%;">
+    </iframe>
+  </div>
+</div>
+
+<hr style="border:none;border-top:1px solid #E2E8F0;margin-bottom:1.5rem;" />
+
+<!-- Team -->
+<h3 style="margin-bottom:1rem;">👥 Đội ngũ phát triển</h3>
+<div class="members-grid">
+  {% for m in members %}
+  <div class="member-card">
+    <div class="card-cover"></div>
+    <div class="avatar-wrap">
+      <img src="{{ m.img_src }}" alt="{{ m.name }}" />
+    </div>
+    <div style="padding:0 1rem 0;">
+      <div class="member-name">{{ m.name }}</div>
+      <div class="member-mssv">{{ m.mssv }}</div>
+      <span class="role-badge" style="{{ m.badge_css }}">{{ m.role_label }}</span>
+      <div class="tech-line">
+        <span class="tech-label">Chuyên môn chính</span>
+        {{ m.tech_role }}
+      </div>
+    </div>
+    <!-- HTMX: load member detail into modal without page reload -->
+    <button class="btn btn-secondary"
+            style="width:100%;border-radius:0 0 20px 20px;border-top:none;"
+            hx-get="/api/member/{{ m.mssv }}"
+            hx-target="#member-modal-body"
+            hx-swap="innerHTML"
+            onclick="document.getElementById('member-modal').showModal()">
+      Xem hồ sơ
+    </button>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Member detail modal (native <dialog>) -->
+<dialog id="member-modal" style="border:none;border-radius:20px;padding:0;max-width:560px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+  <div id="member-modal-body" style="padding:2rem;">
+    <p style="color:#64748B;">Đang tải...</p>
+  </div>
+  <div style="padding:0 2rem 1.5rem;text-align:right;">
+    <button class="btn btn-secondary" onclick="document.getElementById('member-modal').close()">Đóng</button>
+  </div>
+</dialog>
+
+<hr style="border:none;border-top:1px solid #E2E8F0;margin:2rem 0 1.5rem;" />
+
+<!-- Contact -->
+<h3 style="margin-bottom:1rem;">📬 Liên hệ &amp; Góp ý</h3>
+<div class="contact-grid">
+  <div>
+    <div class="contact-box">
+      <div class="contact-label">📍 Địa chỉ</div>
+      <div class="contact-value">227 Nguyễn Văn Cừ, Quận 5, TP.HCM (HCMUS)</div>
+    </div>
+    <div class="contact-box">
+      <div class="contact-label">📧 Email</div>
+      <div class="contact-value">hoangcaophong.works@gmail.com</div>
+    </div>
+    <div class="contact-box">
+      <div class="contact-label">☎️ Hotline</div>
+      <div class="contact-value">0123 456 789</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h4 style="margin-bottom:1rem;">📝 Gửi tin nhắn cho chúng tôi</h4>
+    <!-- HTMX posts the form, swaps in a success/error message without reload -->
+    <form hx-post="/api/feedback"
+          hx-target="#feedback-result"
+          hx-swap="innerHTML"
+          hx-indicator="#feedback-spinner">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Họ tên</label>
+          <input type="text" name="name" placeholder="Tên của bạn" required />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="example@email.com" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Chủ đề</label>
+        <select name="category">
+          <option>Góp ý tính năng</option>
+          <option>Báo lỗi</option>
+          <option>Hợp tác</option>
+          <option>Khác</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nội dung</label>
+        <textarea name="content" placeholder="Nhập tin nhắn..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">
+        <span id="feedback-spinner" class="htmx-indicator spinner"></span>
+        🚀 Gửi tin nhắn
+      </button>
+    </form>
+    <div id="feedback-result" style="margin-top:0.75rem;"></div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:2rem 0 0.5rem;color:#94A3B8;border-top:1px solid #E2E8F0;margin-top:2rem;font-size:0.9rem;">
+  © 2025 WindyAI. Built by WindyAI.Software.
+</div>

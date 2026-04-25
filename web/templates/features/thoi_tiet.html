@@ -1,0 +1,23 @@
+<!-- ===== FEATURE: Weather ===== -->
+<h3 style="margin-bottom:0.5rem;">🌤️ Báo thời tiết vị trí</h3>
+<p style="color:#64748B;margin-bottom:1.25rem;">Xem thời tiết hiện tại và dự báo 3 ngày tới cho bất kỳ địa điểm nào.</p>
+
+<form hx-post="/api/feature/thoi-tiet"
+      hx-target="#thoi-tiet-result"
+      hx-swap="innerHTML"
+      hx-indicator="#tt-spinner">
+
+  <div class="form-card" style="margin-bottom:1rem;">
+    <div class="form-group">
+      <label>📍 Địa điểm</label>
+      <input type="text" name="location" placeholder="Ví dụ: Quận 7, TP.HCM hoặc Đà Lạt" required />
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-full">
+    <span id="tt-spinner" class="htmx-indicator spinner"></span>
+    🌍 Xem thời tiết
+  </button>
+</form>
+
+<div id="thoi-tiet-result" style="margin-top:1.5rem;"></div>

@@ -1,0 +1,65 @@
+<!-- ===== FEATURE: Landmark Image Recognition ===== -->
+<h3 style="margin-bottom:0.5rem;">📷 Tìm vị trí ảnh</h3>
+<p style="color:#64748B;margin-bottom:1.25rem;">Tải ảnh lên để AI nhận diện địa điểm tại TP.HCM.</p>
+
+<div class="form-card">
+  <form hx-post="/api/feature/nhan-dien"
+        hx-target="#nhan-dien-result"
+        hx-swap="innerHTML"
+        hx-indicator="#nd-spinner"
+        hx-encoding="multipart/form-data">
+
+    <!-- Drag-and-drop upload zone -->
+    <div id="drop-zone"
+         style="border:2px dashed #CBD5E1;border-radius:14px;padding:2.5rem;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:1rem;"
+         ondragover="event.preventDefault();this.style.borderColor='#2563EB';"
+         ondragleave="this.style.borderColor='#CBD5E1';"
+         ondrop="handleDrop(event)">
+      <div style="font-size:2.5rem;margin-bottom:0.5rem;">🖼️</div>
+      <p style="color:#64748B;margin-bottom:0.75rem;">Kéo thả ảnh vào đây hoặc</p>
+      <label class="btn btn-secondary" style="cursor:pointer;">
+        Chọn ảnh
+        <input type="file" name="image" id="img-input" accept="image/*"
+               style="display:none;" onchange="previewImage(this)" />
+      </label>
+    </div>
+
+    <!-- Preview -->
+    <div id="img-preview" style="display:none;text-align:center;margin-bottom:1rem;">
+      <img id="preview-img" src="" alt="preview"
+           style="max-height:220px;border-radius:12px;border:1px solid #E2E8F0;" />
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-full">
+      <span id="nd-spinner" class="htmx-indicator spinner"></span>
+      🔍 Nhận diện địa điểm
+    </button>
+  </form>
+</div>
+
+<div id="nhan-dien-result" style="margin-top:1.5rem;"></div>
+
+<script>
+  function previewImage(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('preview-img').src = e.target.result;
+        document.getElementById('img-preview').style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').style.borderColor = '#CBD5E1';
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    const input = document.getElementById('img-input');
+    input.files = dt.files;
+    previewImage(input);
+  }
+</script>

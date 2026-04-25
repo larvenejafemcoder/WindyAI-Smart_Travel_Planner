@@ -1,0 +1,59 @@
+<!-- ===== FEATURE: Itinerary Planner ===== -->
+<h3 style="margin-bottom:0.5rem;">🗓️ Tạo lịch trình gợi ý</h3>
+<p style="color:#64748B;margin-bottom:1.25rem;">Nhập sở thích và yêu cầu, thuật toán AI sẽ tối ưu lịch trình cho bạn!</p>
+
+<form hx-post="/api/feature/lich-trinh"
+      hx-target="#lich-trinh-result"
+      hx-swap="innerHTML"
+      hx-indicator="#lt-spinner">
+
+  <div class="form-card" style="margin-bottom:1rem;">
+    <div class="form-group">
+      <label>📍 Điểm xuất phát</label>
+      <input type="text" name="start_location" value="Quận 1, TP.HCM" placeholder="Vị trí bắt đầu hành trình" />
+    </div>
+
+    <label style="font-weight:600;font-size:0.9rem;color:#1E293B;display:block;margin-bottom:0.5rem;">🎯 Sở thích</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1.5rem;margin-bottom:1rem;">
+      {% for val, label in [
+        ("history",     "🏛️ Lịch sử / Di tích"),
+        ("modern",      "🏙️ Hiện đại"),
+        ("food",        "🍜 Ẩm thực"),
+        ("culture",     "🎭 Văn hóa"),
+        ("shopping",    "🛍️ Mua sắm"),
+        ("nightlife",   "🌃 Giải trí"),
+        ("nature",      "🌳 Thiên nhiên"),
+        ("religious",   "🙏 Tôn giáo")
+      ] %}
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.92rem;cursor:pointer;">
+        <input type="checkbox" name="prefs" value="{{ val }}"
+               {% if val in ["history","food"] %}checked{% endif %} />
+        {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>⏰ Giờ bắt đầu</label>
+        <input type="time" name="start_time" value="09:00" />
+      </div>
+      <div class="form-group">
+        <label>⏰ Giờ kết thúc</label>
+        <input type="time" name="end_time" value="21:00" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>💰 Ngân sách tối đa (VND)</label>
+      <input type="number" name="budget" value="1000000" min="0" step="100000" />
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-full">
+    <span id="lt-spinner" class="htmx-indicator spinner"></span>
+    🎯 Tạo lịch trình tối ưu
+  </button>
+</form>
+
+<div id="lich-trinh-result" style="margin-top:1.5rem;"></div>
